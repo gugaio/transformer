@@ -1,65 +1,65 @@
-import os
-import argparse
-import spacy
 import torch
-import torchtext.data
-import torchtext.datasets
-import transformers.Constants as Constants
+import torchtext
+from torchtext.data.functional import to_map_style_dataset
+from torchtext.datasets import Multi30k
+from torchtext.vocab import build_vocab_from_iterator
+from typing import Iterable, List
+import spacy
+import h5py
 
+spacy_en = spacy.load("en_core_web_sm")
+spacy_de = spacy.load("de_core_news_sm")
 
+def tokenize_en(text: str) -> List[str]:
+    return [tok.text for tok in spacy_en.tokenizer(text)]
 
-def main_wo_bpe():
-    '''
-    Usage: python preprocess.py -lang_src de -lang_trg en -save_data multi30k_de_en.pkl -share_vocab
-    '''
+def tokenize_de(text: str) -> List[str]:
+    return [tok.text for tok in spacy_de.tokenizer(text)]
 
-    spacy_support_langs = ['pt_core_news_sm', 'el', 'en_core_web_sm', 'es', 'fr', 'it', 'lt', 'nb', 'nl', 'pt']
+def yield_tokens(data_iter: Iterable, language: str) -> List[str]:
+    if language == "en":
+        for src_sample, trg_sample in data_iter:
+            yield tokenize_en(src_sample.rstrip("\n"))
+    elif language == "de":
+        for src_sample, trg_sample in data_iter:
+            yield tokenize_de(src_sample.rstrip("\n"))
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-lang_src', required=True, choices=spacy_support_langs)
-    parser.add_argument('-lang_trg', required=True, choices=spacy_support_langs)
-    parser.add_argument('-save_data', required=True)
-    parser.add_argument('-data_src', type=str, default=None)
-    parser.add_argument('-data_trg', type=str, default=None)
+def data_process(batch: List[str]):
+    src_batch, trg_batch = [], []
 
-    parser.add_argument('-max_len', type=int, default=100)
-    parser.add_argument('-min_word_count', type=int, default=3)
-    parser.add_argument('-keep_case', action='store_true')
-    parser.add_argument('-share_vocab', action='store_true')
+    for src_sample, trg_sample in batch:
+        src_tensor_ = torch.tensor([SRC_VOCAB[token] for token in tokenize_en(src_sample.rstrip("\n"))],
+                                   dtype=torch.long)
+        trg_tensor_ = torch.tensor([TRG_VOCAB[token] for token in tokenize_de(trg_sample.rstrip("\n"))],
+                                   dtype=torch.long)
+        src_batch.append(src_tensor_)
+        trg_batch.append(trg_tensor_)
 
-    opt = parser.parse_args()
-    assert not any([opt.data_src, opt.data_trg]), 'Custom data input is not support now.'
-    assert not any([opt.data_src, opt.data_trg]) or all([opt.data_src, opt.data_trg])
-    print(opt)
+    src_batch = torch.nn.utils.rnn.pad_sequence(src_batch, padding_value=SRC_VOCAB["<pad>"])
+    trg_batch = torch.nn.utils.rnn.pad_sequence(trg_batch, padding_value=TRG_VOCAB["<pad>"])
 
-    src_lang_model = spacy.load(opt.lang_src)
-    trg_lang_model = spacy.load(opt.lang_trg)
+    return src_batch, trg_batch
 
-    MAX_LEN = opt.max_len
-    MIN_FREQ = opt.min_word_count
+# Dataloader
+BATCH_SIZE = 128
 
-    if not all([opt.data_src, opt.data_trg]):
-        assert {opt.lang_src, opt.lang_trg} == {'pt_core_news_sm', 'en_core_web_sm'}
-    else:
-        # Pack custom txt file into example datasets
-        raise NotImplementedError
-    
-    def tokenize_src(text):
-        return [tok.text for tok in src_lang_model.tokenizer(text)]
+train_iter = Multi30k(split='train', language_pair=('en', 'de'))
+SRC_VOCAB = build_vocab_from_iterator(yield_tokens(train_iter, "en"))
+TRG_VOCAB = build_vocab_from_iterator(yield_tokens(train_iter, "de"))
+train_data = to_map_style_dataset(train_iter)
+train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, collate_fn=data_process)
 
-    def tokenize_trg(text):
-        return [tok.text for tok in trg_lang_model.tokenizer(text)]
+data = {
+    "train_dataloader": train_dataloader,
+    "SRC_VOCAB": SRC_VOCAB,
+    "TRG_VOCAB": TRG_VOCAB
+}
 
-    SRC = torchtext.data.Field(
-        tokenize=tokenize_src, lower=not opt.keep_case,
-        pad_token=Constants.PAD_WORD, init_token=Constants.BOS_WORD, eos_token=Constants.EOS_WORD)
+save_data = "data.pkl"
+print('[Info] Dumping the processed data to bin file', save_data)
+with h5py.File("train_data.hdf5", "w") as f:
+    for i, (src, trg) in enumerate(train_data):
+        grp = f.create_group(str(i))
+        grp.attrs["src"] = src
+        grp.attrs["trg"] = trg
 
-    TRG = torchtext.data.Field(
-        tokenize=tokenize_trg, lower=not opt.keep_case,
-        pad_token=Constants.PAD_WORD, init_token=Constants.BOS_WORD, eos_token=Constants.EOS_WORD)
-
-
-
-if __name__ == '__main__':
-    main_wo_bpe()
-    #main()
