@@ -2,10 +2,12 @@ import torch.nn as nn
 import torch
 from multi_head_attention import MultiHeadAttention
 from position_wise_feed_forward import PositionWiseFeedForward
+import logging
 
 class EncoderBlock(nn.Module):
     def __init__(self, d_model, d_iiner, n_head, d_k, d_v, dropout_rate=0.1):
         super(EncoderBlock, self).__init__()
+        self.logger = logging.getLogger('EncoderBlock')    
         self.self_attention = MultiHeadAttention(d_model, n_head, d_k, d_v, dropout_rate=dropout_rate)
         self.feed_forward = PositionWiseFeedForward(d_model, d_iiner, dropout_rate=dropout_rate)
 
@@ -13,9 +15,16 @@ class EncoderBlock(nn.Module):
         # encoded_input.shape = (batch_size, seq_len, d_model)
         # mask.shape = (batch_size, seq_len, seq_len)
         # output.shape = (batch_size, seq_len, d_model)
+        self.logger.debug('X.shape = {}'.format(x.shape))
+        self.logger.info('Run X into Self Attention')
         x, attention_weights = self.self_attention(q=x, k=x, v=x, mask=mask)
+        
+        self.logger.info('Run X into Feed Forward')
         x = self.feed_forward(x)
+
+        self.logger.info('Returning X.shape = {}'.format(x.shape))
         return x, attention_weights
+    
 
 class DecoderBlock(nn.Module):
     def __init__(self, d_model, d_iiner, n_head, d_k, d_v, dropout_rate=0.1):

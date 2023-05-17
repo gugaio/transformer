@@ -16,7 +16,9 @@ spacy_de = spacy.load(LANG_DICT["de"])
 class Tokenizer:
      
   def __init__(self, BATCH_SIZE=100) -> None:
-      self.BATCH_SIZE = BATCH_SIZE
+    self.BATCH_SIZE = BATCH_SIZE
+    self.MAX_SRC_SEQ_LEN = 0
+    self.MAX_TRG_SEQ_LEN = 0
   
   def log(self, msg):
       print(msg)
@@ -29,7 +31,7 @@ class Tokenizer:
       self.train_dataloader = torch.utils.data.DataLoader(self.dataset_train_map, batch_size=self.BATCH_SIZE, shuffle=True, collate_fn=self.data_process)
 
   def get_train_dataloader(self):
-      self.train_dataloader
+      return self.train_dataloader
 
   def build_vocabulary(self, datataset_iterable):
       self.SRC_VOCAB = build_vocab_from_iterator(self.yield_dataset_tokens(datataset_iterable, "en", spacy_en))
@@ -50,14 +52,23 @@ class Tokenizer:
   def data_process(self, batch: List[str]):
       src_batch, trg_batch = [], []
       for src_sample, trg_sample in batch:
-          self.log("Source " + src_sample)
-          src_tensor_ = torch.tensor([self.SRC_VOCAB[token] for token in self.tokenize(src_sample.rstrip("\n"), spacy_en)],
-                                  dtype=torch.long)
-          self.log("Target " + trg_sample)
-          trg_tensor_ = torch.tensor([self.TRG_VOCAB[token] for token in self.tokenize(trg_sample.rstrip("\n"), spacy_de)],
-                                  dtype=torch.long)
-          src_batch.append(src_tensor_)
-          trg_batch.append(trg_tensor_)
+        self.log("Source " + src_sample)
+        src_tensor_ = torch.tensor([self.SRC_VOCAB[token] for token in self.tokenize(src_sample.rstrip("\n"), spacy_en)],
+                                dtype=torch.long)
+        src_seq_len = src_tensor_.shape[0]
+        if src_seq_len > self.MAX_SRC_SEQ_LEN:
+            self.MAX_SRC_SEQ_LEN = src_seq_len
+          
+        self.log("Target " + trg_sample)
+        trg_tensor_ = torch.tensor([self.TRG_VOCAB[token] for token in self.tokenize(trg_sample.rstrip("\n"), spacy_de)],
+                                dtype=torch.long)
+        
+        trg_seq_len = trg_tensor_.shape[0]
+        if trg_seq_len > self.MAX_TRG_SEQ_LEN:
+            self.MAX_TRG_SEQ_LEN = trg_seq_len
+
+        src_batch.append(src_tensor_)
+        trg_batch.append(trg_tensor_)
 
       src_batch = torch.nn.utils.rnn.pad_sequence(src_batch, padding_value=self.SRC_VOCAB["<pad>"]).T
       trg_batch = torch.nn.utils.rnn.pad_sequence(trg_batch, padding_value=self.TRG_VOCAB["<pad>"]).T
@@ -69,10 +80,12 @@ def main():
     tokenizer = Tokenizer()
     tokenizer.build()
     dataloader = tokenizer.get_train_dataloader()
-    
+
     batch_1_src, batch_1_target = next(iter(dataloader))
     print(batch_1_src.shape)
     print(batch_1_target.shape)
+    print("MAX_SRC_SEQ_LEN =", tokenizer.MAX_SRC_SEQ_LEN)
+    print("MAX_TRG_SEQ_LEN =",tokenizer.MAX_TRG_SEQ_LEN)
 
 
 if __name__ == "__main__":
