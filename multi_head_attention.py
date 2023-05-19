@@ -38,9 +38,10 @@ class MultiHeadAttention(nn.Module):
         k = self.wk(k)
         v = self.wv(v)
 
-        q = self.split_heads(q)
-        k = self.split_heads(k)
-        v = self.split_heads(v)
+        # (batch_size, num_heads, len_q, depth)  <- (batch_size, len_q, depth)
+        q = self.split_into_heads(q)
+        k = self.split_into_heads(k)
+        v = self.split_into_heads(v)
 
         self.logger.debug(f'After split heads q.shape {q.shape}, k.shape {k.shape} and v.shape {v.shape}')
         self.logger.debug(f'Batch size: {q.shape[0]} Heads:{q.shape[1]} Sentence lenght:{q.shape[2]} d_model: {q.shape[3]}')
@@ -54,8 +55,8 @@ class MultiHeadAttention(nn.Module):
         # attention_weights.shape = (batch_size, num_heads, seq_len_q, seq_len_k)
         scaled_attention, attention_weights = self.attention(q, k, v, mask)
         
+        #(batch_size, seq_len_q, depth)  <- (batch_size, seq_len_q, num_heads, depth)
         concat_attention = scaled_attention.transpose(1, 2).contiguous().view(batch_size, len_q, -1)
-        #concat_attention.shape = (batch_size, seq_len_q, depth)
         self.logger.debug(f'Concat Attention shape: batch_size {concat_attention.shape[0]} seq_len_q:{concat_attention.shape[1]} depth: {concat_attention.shape[2]}')
 
         # output.shape = (batch_size, seq_len_q, d_model)
@@ -67,8 +68,9 @@ class MultiHeadAttention(nn.Module):
 
         self.logger.info(f'Result shape {output.shape}')
         return output, attention_weights
+    
   
-    def split_heads(self, x):
+    def split_into_heads(self, x):
         """
         Split the last dimension from d_model into (num_heads, depth).
         Transpose the result such that the shape is (batch_size, num_heads, seq_len, depth)
@@ -81,7 +83,13 @@ class MultiHeadAttention(nn.Module):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
-    multiHead = MultiHeadAttention(512, 8, 64, 64)
+    d_model = 512
+    num_heads = 8
+    d_k = 64
+    d_v = 64
+
+    multiHead = MultiHeadAttention(d_model, num_heads, d_k, d_v)
+
     q = torch.rand(2, 4, 512)
     k = torch.rand(2, 4, 512)
     v = torch.rand(2, 4, 512)
