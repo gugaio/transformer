@@ -34,10 +34,16 @@ class MultiHeadAttention(nn.Module):
         batch_size, len_q = q.size(0), q.size(1)
         residual = q
 
-        q = self.wq(q)
-        k = self.wk(k)
-        v = self.wv(v)
+        self.logger.debug("Creating multi-heads weights")
 
+        q = self.wq(q)
+        self.logger.debug( f'After linear projection q.shape {q.shape}')
+        k = self.wk(k)
+        self.logger.debug( f'After linear projection q.shape {k.shape}')
+        v = self.wv(v)
+        self.logger.debug( f'After linear projection q.shape {v.shape}')
+
+        self.logger.debug(f'After multi-heads weights q.shape {q.shape}, k.shape {k.shape} and v.shape {v.shape}')
         # (batch_size, num_heads, len_q, depth)  <- (batch_size, len_q, depth)
         q = self.split_into_heads(q)
         k = self.split_into_heads(k)
@@ -75,6 +81,7 @@ class MultiHeadAttention(nn.Module):
         Split the last dimension from d_model into (num_heads, depth).
         Transpose the result such that the shape is (batch_size, num_heads, seq_len, depth)
         """
+        self.logger.debug(f'Split into heads x.shape {x.shape}')
         batch_size = x.size(0)
         len_sentence = x.size(1)
         x = x.view(batch_size, len_sentence, self.num_heads, -1)
