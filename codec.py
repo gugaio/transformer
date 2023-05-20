@@ -7,7 +7,7 @@ import logging
 
 class Encoder(nn.Module):
       
-  def __init__(self, n_src_vocab, n_layers, d_model, d_iiner, n_head, d_k, d_v,padding_idx,  dropout_rate=0.1, n_position=200, scale_emb=False):
+  def __init__(self, n_src_vocab, n_layers, d_model, d_inner, n_head, d_k, d_v,padding_idx,  dropout_rate=0.1, n_position=200, scale_emb=False):
     super(Encoder, self).__init__()
     self.logger = logging.getLogger('Encoder')
     self.logger.info('Initializing Encoder')
@@ -15,7 +15,7 @@ class Encoder(nn.Module):
     self.logger.debug('n_layers = {}'.format(n_layers))
     self.logger.debug('d_model = {}'.format(d_model))
 
-    self.logger.debug('d_iiner = {}'.format(d_iiner))
+    self.logger.debug('d_inner = {}'.format(d_inner))
     self.logger.debug('n_head = {}'.format(n_head))
 
     self.logger.debug('d_k = {}'.format(d_k))
@@ -26,7 +26,7 @@ class Encoder(nn.Module):
     self.src_embedding = nn.Embedding(n_src_vocab, d_model, padding_idx=padding_idx)
     self.position_embedding = PositionalEncoding(d_model, n_position=n_position)
     self.dropout = nn.Dropout(p=dropout_rate)
-    self.encoder_blocks = nn.ModuleList([EncoderBlock(d_model, n_head, d_k, d_v, d_iiner, dropout_rate) for _ in range(n_layers)])    
+    self.encoder_blocks = nn.ModuleList([EncoderBlock(d_model, n_head, d_k, d_v, d_inner, dropout_rate) for _ in range(n_layers)])    
     self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
     self.d_model = d_model
       
@@ -36,11 +36,6 @@ class Encoder(nn.Module):
 
     self.logger.info('Encoding')
     self.logger.debug('X.shape = {}'.format(X.shape))   
-    if src_mask is not None:
-        self.logger.debug('Encoder mask shape ={}'.format(src_mask.shape))   
-         #(batch_size, 1, seq_len) <- (batch_size, seq_len)
-        src_mask = src_mask.unsqueeze(1)
-        self.logger.debug('Encoder mask unsqueezed shape ={}'.format(src_mask.shape))    
 
     X = self.src_embedding(X)
     self.logger.debug("X.shape after embedding = {}".format(X.shape))
@@ -70,13 +65,13 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     
-    def __init__(self, n_trg_vocab, d_model, n_layers, n_head, d_k, d_v, padding_idx, d_iiner, n_position=200, dropout_rate=0.1, scale_emb=False):
+    def __init__(self, n_trg_vocab, d_model, n_layers, n_head, d_k, d_v, padding_idx, d_inner, n_position=200, dropout_rate=0.1, scale_emb=False):
         super(Decoder, self).__init__()
         self.logger = logging.getLogger('Decoder')
         self.logger.info('Initializing Decoder')
         self.logger.debug('n_trg_vocab = {}'.format(n_trg_vocab))
         self.logger.debug('d_model = {}'.format(d_model))
-        self.logger.debug('d_iiner = {}'.format(d_iiner))
+        self.logger.debug('d_inner = {}'.format(d_inner))
         self.logger.debug('n_head = {}'.format(n_head))
         self.logger.debug('d_k = {}'.format(d_k))
         self.logger.debug('d_v = {}'.format(d_v))
@@ -86,7 +81,7 @@ class Decoder(nn.Module):
         self.position_encoding = PositionalEncoding(d_model, n_position)
         self.dropout = nn.Dropout(dropout_rate)
 
-        self.decoder_blocks = nn.ModuleList([DecoderBlock(d_model, n_head, d_k, d_v, d_iiner, dropout_rate) for _ in range(n_layers)])
+        self.decoder_blocks = nn.ModuleList([DecoderBlock(d_model, n_head, d_k, d_v, d_inner, dropout_rate) for _ in range(n_layers)])
         
         self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
         self.scale_emb = scale_emb
@@ -97,18 +92,6 @@ class Decoder(nn.Module):
         self.logger.info('Decoding')
         self.logger.debug('decode_input.shape = {}'.format(decode_input.shape))
         self.logger.debug('encode_output.shape = {}'.format(encode_output.shape))
-
-        if self_attention_mask is not None:
-            self.logger.debug('Self attention mask shape ={}'.format(self_attention_mask.shape))
-            #(batch_size, 1, seq_len) <- (batch_size, seq_len)
-            self_attention_mask = self_attention_mask.unsqueeze(1)
-            self.logger.debug('Self attention mask unsqueezed shape ={}'.format(self_attention_mask.shape))
-
-        if decode_encode_attention_mask is not None:
-            self.logger.debug('Decode-encode attention mask shape ={}'.format(decode_encode_attention_mask.shape))
-            #(batch_size, 1, seq_len) <- (batch_size, seq_len)
-            decode_encode_attention_mask = decode_encode_attention_mask.unsqueeze(1)
-            self.logger.debug('Decode-encode attention mask unsqueezed shape ={}'.format(decode_encode_attention_mask.shape))
 
         decode_embedded_input = self.trg_embedding(decode_input)
         self.logger.debug("decode_embedded_input.shape after embedding = {}".format(decode_embedded_input.shape))
@@ -156,7 +139,7 @@ def main():
     padding_idx = 0
 
     src_seq = torch.randint(lower_word_index, upper_word_index, (batch_size, seq_len))
-    src_mask = torch.ones((batch_size, seq_len))
+    src_mask = torch.ones((batch_size, 1, seq_len))
 
     print("\n\n**** ==> Init Encoder \n\n")
 
@@ -170,7 +153,7 @@ def main():
     decoder = Decoder(n_trg_vocab, d_model, n_layers, n_head, d_k, d_v, padding_idx, d_iiner, n_position, dropout_rate, scale_emb)
 
     tgt_seq = torch.randint(lower_word_index, upper_word_index, (batch_size, seq_len))
-    tgt_mask = torch.ones((batch_size, seq_len))
+    tgt_mask = torch.ones((batch_size, seq_len, seq_len))
 
     decode_output = decoder(tgt_seq, encode_output, tgt_mask, src_mask)
 
