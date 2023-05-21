@@ -17,7 +17,7 @@ def get_subsequent_mask(seq):
 class Transformer(nn.Module):
     ''' Attention is all you need model '''
 
-    def __init__(self, n_src_vocab, n_trg_vocab, src_pad_idx, trg_pad_idx,
+    def __init__(self, tokenizer,
             d_model=512, d_inner=2048,
             n_layers=6, n_head=8, d_k=64, d_v=64, dropout=0.1, n_position=200,
             trg_emb_prj_weight_sharing=True, emb_src_trg_weight_sharing=True,
@@ -25,6 +25,12 @@ class Transformer(nn.Module):
         super().__init__()
         self.logger = logging.getLogger('Transformer')
         self.logger.info("Transformer init")
+
+        n_src_vocab = len(tokenizer.SRC_VOCAB)
+        n_trg_vocab = len(tokenizer.TRG_VOCAB)
+        src_pad_idx = tokenizer.MAX_SRC_SEQ_LEN
+        trg_pad_idx = tokenizer.MAX_TRG_SEQ_LEN
+
         self.logger.info("n_src_vocab = {}".format(n_src_vocab))
         self.logger.info("n_trg_vocab = {}".format(n_trg_vocab))
         self.logger.info("src_pad_idx = {}".format(src_pad_idx))
@@ -86,8 +92,14 @@ class Transformer(nn.Module):
         self.logger.debug("trg_mask.shape = {}".format(trg_mask.shape))
 
         enc_output = self.encoder(X=src_seq, src_mask=src_mask)
+        self.logger.debug("Encoder result shape = {}".format(enc_output.shape))
+
         dec_output = self.decoder(decode_input=trg_seq, encode_output=enc_output, self_attention_mask=trg_mask, decode_encode_attention_mask=src_mask)
+        self.logger.debug("Decoder result shape = {}".format(dec_output.shape))
+
         seq_logit = self.trg_word_prj(dec_output)
+        self.logger.debug("Seq Logit shape = {}".format(seq_logit.shape))
+
         if self.scale_prj:
             seq_logit *= self.d_model ** -0.5
 

@@ -29,6 +29,7 @@ class Tokenizer:
       self.build_vocabulary(self.dataset_train_interable)
       self.dataset_train_map = to_map_style_dataset(self.dataset_train_interable)
       self.train_dataloader = torch.utils.data.DataLoader(self.dataset_train_map, batch_size=self.BATCH_SIZE, shuffle=True, collate_fn=self.data_process)
+      return self
 
   def get_train_dataloader(self):
       return self.train_dataloader

@@ -31,7 +31,6 @@ class Attention(nn.Module):
         if mask is not None:
             self.logger.debug(f'Mask: {mask.shape} and Attention {attn.shape}')
             attn = attn.masked_fill(mask == 0, -1e9)
-            self.logger.debug(f'Masked Attention shape: {attn.shape}')
             
         # softmax
         attn = torch.softmax(attn, dim=-1)
