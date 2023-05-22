@@ -28,7 +28,7 @@ class MultiHeadAttention(nn.Module):
 
     def forward(self, q, k, v, mask=None):
         assert q.size(-1) == k.size(-1)
-        self.logger.info(f'Forward q.shape {q.shape}, k.shape {k.shape} and v.shape {v.shape}')
+        self.logger.debug(f'Forward q.shape {q.shape}, k.shape {k.shape} and v.shape {v.shape}')
         self.logger.debug(f'Batch size: {q.shape[0]} Sentence lenght:{q.shape[1]} d_model: {q.shape[2]}')
 
         batch_size, len_q = q.size(0), q.size(1)
@@ -53,7 +53,7 @@ class MultiHeadAttention(nn.Module):
         self.logger.debug(f'Batch size: {q.shape[0]} Heads:{q.shape[1]} Sentence lenght:{q.shape[2]} d_model: {q.shape[3]}')
 
         if mask is not None:
-            self.logger.info(f'Forward with mask.shape: {mask.shape}')
+            self.logger.debug(f'Forward with mask.shape: {mask.shape}')
             mask = mask.unsqueeze(1)
             self.logger.debug(f'Mask unsqueeze shape: {mask.shape}')
 
@@ -72,7 +72,7 @@ class MultiHeadAttention(nn.Module):
         output += residual
         output = self.layer_norm(output)
 
-        self.logger.info(f'Result shape {output.shape}')
+        self.logger.debug(f'Result shape {output.shape}')
         return output, attention_weights
     
   

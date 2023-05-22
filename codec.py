@@ -10,7 +10,7 @@ class Encoder(nn.Module):
   def __init__(self, n_src_vocab, n_layers, d_model, d_inner, n_head, d_k, d_v,padding_idx,  dropout_rate=0.1, n_position=200, scale_emb=False):
     super(Encoder, self).__init__()
     self.logger = logging.getLogger('Encoder')
-    self.logger.info('Initializing Encoder')
+    self.logger.info('Encoder initializing')
     self.logger.debug('n_src_vocab = {}'.format(n_src_vocab))
     self.logger.debug('n_layers = {}'.format(n_layers))
     self.logger.debug('d_model = {}'.format(d_model))
@@ -34,8 +34,8 @@ class Encoder(nn.Module):
     # X.shape = (batch_size, seq_len)
     #src_mask.shape = (batch_size, seq_len)
 
-    self.logger.info('Encoding')
-    self.logger.debug('X.shape = {}'.format(X.shape))   
+    self.logger.info('Embedding, position encoding, dropout and normalizing')
+    self.logger.debug('Encoding X.shape = {}'.format(X.shape))   
 
     X = self.src_embedding(X)
     self.logger.debug("X.shape after embedding = {}".format(X.shape))
@@ -44,19 +44,18 @@ class Encoder(nn.Module):
         self.logger.debug('Scaling X by sqrt(d_model)')
         X *= np.sqrt(self.d_model)
 
-    self.logger.info('Position embeded, dropout and normalizing')
     X = self.dropout(self.position_embedding(X))
     X = self.layer_norm(X)
 
     list_attention_weights = []
-    self.logger.info("Calling total of {} encoder blocks".format(len(self.encoder_blocks)))
+    self.logger.debug("Calling total of {} encoder blocks".format(len(self.encoder_blocks)))
     for encoder_block in self.encoder_blocks:
         self.logger.debug("Calling encoder block")
         X, attention_weights = encoder_block(X, mask=src_mask)
         self.logger.debug("X.shape after encoder block = {}".format(X.shape))
         list_attention_weights += [attention_weights] if return_attns else []
 
-    self.logger.info('Encoding finished')
+    self.logger.debug('Encoding finished')
 
     if return_attns:
         return X, list_attention_weights    
@@ -68,7 +67,7 @@ class Decoder(nn.Module):
     def __init__(self, n_trg_vocab, d_model, n_layers, n_head, d_k, d_v, padding_idx, d_inner, n_position=200, dropout_rate=0.1, scale_emb=False):
         super(Decoder, self).__init__()
         self.logger = logging.getLogger('Decoder')
-        self.logger.info('Initializing Decoder')
+        self.logger.info('Decoder initializing')
         self.logger.debug('n_trg_vocab = {}'.format(n_trg_vocab))
         self.logger.debug('d_model = {}'.format(d_model))
         self.logger.debug('d_inner = {}'.format(d_inner))
@@ -89,7 +88,7 @@ class Decoder(nn.Module):
         
     def forward(self,  decode_input, encode_output, self_attention_mask=None, decode_encode_attention_mask=None, return_attns=False):
         # decode_input.shape = (batch_size, seq_len, d_model)
-        self.logger.info('Decoding')
+        self.logger.info('Decoding started')
         self.logger.debug('decode_input.shape = {}'.format(decode_input.shape))
         self.logger.debug('encode_output.shape = {}'.format(encode_output.shape))
 
@@ -106,7 +105,7 @@ class Decoder(nn.Module):
         decode_embedded_input = self.layer_norm(decode_embedded_input)
         decode_output = decode_embedded_input
 
-        self.logger.info('Calling total of {} decoder blocks'.format(len(self.decoder_blocks)))
+        self.logger.debug('Calling total of {} decoder blocks'.format(len(self.decoder_blocks)))
         for decoder_block in self.decoder_blocks:
             self.logger.debug("Calling decoder block")
             decode_output, decode_self_attention_weights, decode_encode_attention_weights = decoder_block(decode_output, encode_output, self_attention_mask, decode_encode_attention_mask)

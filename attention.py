@@ -18,7 +18,7 @@ class Attention(nn.Module):
         :return: (batch_size, n_heads, seq_len, d_v), (batch_size, n_heads, seq_len, seq_len)
         '''
         assert q.size(-1) == k.size(-1)
-        self.logger.info(f'Forward q.shape, k.shape and v.shape: {q.shape} {k.shape} {v.shape}')
+        self.logger.debug(f'Forward q.shape, k.shape and v.shape: {q.shape} {k.shape} {v.shape}')
         
         attn = torch.matmul(q, k.transpose(-1, -2))
         self.logger.debug(f'Attention shape: {attn.shape}')

@@ -4,6 +4,7 @@ from torchtext.datasets import Multi30k
 from torchtext.vocab import build_vocab_from_iterator
 from typing import Iterable, List
 import spacy
+import logging
 
 LANG_DICT ={
     "en": "en_core_web_sm",
@@ -16,12 +17,13 @@ spacy_de = spacy.load(LANG_DICT["de"])
 class Tokenizer:
      
   def __init__(self, BATCH_SIZE=100) -> None:
+    self.logger = logging.getLogger('Tokenizer')
     self.BATCH_SIZE = BATCH_SIZE
     self.MAX_SRC_SEQ_LEN = 0
     self.MAX_TRG_SEQ_LEN = 0
   
   def log(self, msg):
-      print(msg)
+      self.logger.debug(msg)
 
   def build(self):
       self.log(f'Loading spacy model for {LANG_DICT["en"]} and {LANG_DICT["de"]}')

@@ -24,28 +24,28 @@ class Transformer(nn.Module):
             scale_emb_or_prj='prj'):
         super().__init__()
         self.logger = logging.getLogger('Transformer')
-        self.logger.info("Transformer init")
+        self.logger.info("Transformer initializing")
 
         n_src_vocab = len(tokenizer.SRC_VOCAB)
         n_trg_vocab = len(tokenizer.TRG_VOCAB)
         src_pad_idx = tokenizer.MAX_SRC_SEQ_LEN
         trg_pad_idx = tokenizer.MAX_TRG_SEQ_LEN
 
-        self.logger.info("n_src_vocab = {}".format(n_src_vocab))
-        self.logger.info("n_trg_vocab = {}".format(n_trg_vocab))
-        self.logger.info("src_pad_idx = {}".format(src_pad_idx))
-        self.logger.info("trg_pad_idx = {}".format(trg_pad_idx))
-        self.logger.info("d_model = {}".format(d_model))
-        self.logger.info("d_inner = {}".format(d_inner))
-        self.logger.info("n_layers = {}".format(n_layers))
-        self.logger.info("n_head = {}".format(n_head))
-        self.logger.info("d_k = {}".format(d_k))
-        self.logger.info("d_v = {}".format(d_v))
-        self.logger.info("dropout = {}".format(dropout))
-        self.logger.info("n_position = {}".format(n_position))
-        self.logger.info("trg_emb_prj_weight_sharing = {}".format(trg_emb_prj_weight_sharing))
-        self.logger.info("emb_src_trg_weight_sharing = {}".format(emb_src_trg_weight_sharing))
-        self.logger.info("scale_emb_or_prj = {}".format(scale_emb_or_prj))
+        self.logger.debug("n_src_vocab = {}".format(n_src_vocab))
+        self.logger.debug("n_trg_vocab = {}".format(n_trg_vocab))
+        self.logger.debug("src_pad_idx = {}".format(src_pad_idx))
+        self.logger.debug("trg_pad_idx = {}".format(trg_pad_idx))
+        self.logger.debug("d_model = {}".format(d_model))
+        self.logger.debug("d_inner = {}".format(d_inner))
+        self.logger.debug("n_layers = {}".format(n_layers))
+        self.logger.debug("n_head = {}".format(n_head))
+        self.logger.debug("d_k = {}".format(d_k))
+        self.logger.debug("d_v = {}".format(d_v))
+        self.logger.debug("dropout = {}".format(dropout))
+        self.logger.debug("n_position = {}".format(n_position))
+        self.logger.debug("trg_emb_prj_weight_sharing = {}".format(trg_emb_prj_weight_sharing))
+        self.logger.debug("emb_src_trg_weight_sharing = {}".format(emb_src_trg_weight_sharing))
+        self.logger.debug("scale_emb_or_prj = {}".format(scale_emb_or_prj))
 
         assert scale_emb_or_prj in ['emb', 'prj', 'none']
         scale_emb = True if scale_emb_or_prj == 'emb' else False

@@ -14,7 +14,7 @@ class EncoderBlock(nn.Module):
 
     def forward(self, x, mask=None):
         # X and mask = (batch_size, seq_len, d_model)
-        self.logger.info('Running Self Attention')
+        self.logger.debug('Running Self Attention')
         self.logger.debug('X.shape = {}'.format(x.shape))
 
         if mask is not None:
@@ -25,10 +25,10 @@ class EncoderBlock(nn.Module):
 
         x, attention_weights = self.self_attention(q=x, k=x, v=x, mask=mask)
         
-        self.logger.info('Running Position Wise Feed Forward')
+        self.logger.debug('Running Position Wise Feed Forward')
         x = self.feed_forward(x)
 
-        self.logger.info('EncodeBlock finished. Returning x and attention_weights')
+        self.logger.debug('EncodeBlock finished. Returning x and attention_weights')
         self.logger.debug('x.shape = {}'.format(x.shape))
         return x, attention_weights
     
@@ -37,7 +37,7 @@ class DecoderBlock(nn.Module):
     def __init__(self, d_model, n_head, d_k, d_v, d_iiner, dropout_rate=0.1):
         super(DecoderBlock, self).__init__()
         self.logger = logging.getLogger('DecoderBlock')   
-        self.logger.info('Initializing DecoderBlock')
+        self.logger.debug('Initializing DecoderBlock')
 
         self.self_attention = MultiHeadAttention(d_model, n_head, d_k, d_v, dropout_rate=dropout_rate)
         self.encode_decode_attention = MultiHeadAttention(d_model, n_head, d_k, d_v, dropout_rate=dropout_rate)
@@ -58,11 +58,11 @@ class DecoderBlock(nn.Module):
             assert decode_encode_attention_mask.size(-1) == encode_output.size(1)
             self.logger.debug('decode_encode_attention_mask.shape {}'.format(decode_encode_attention_mask.shape))
 
-        self.logger.info('Running Self Attention')
+        self.logger.debug('Running Self Attention')
         decode_output, decode_self_attention_weights = self.self_attention(decode_input, decode_input, decode_input, self_attention_mask)
-        self.logger.info('Running Encode Decode Attention')
+        self.logger.debug('Running Encode Decode Attention')
         decode_output, decode_encode_attention_weights = self.encode_decode_attention(decode_output, encode_output, encode_output, mask=decode_encode_attention_mask)
-        self.logger.info('Running Position Wise Feed Forward')
+        self.logger.debug('Running Position Wise Feed Forward')
         decode_output = self.feed_forward(decode_output)
 
         return decode_output, decode_self_attention_weights, decode_encode_attention_weights
