@@ -83,12 +83,17 @@ def main():
     tokenizer = Tokenizer()
     tokenizer.build()
     dataloader = tokenizer.get_train_dataloader()
+    print(type(dataloader))
 
-    batch_1_src, batch_1_target = next(iter(dataloader))
-    print(batch_1_src.shape)
-    print(batch_1_target.shape)
-    print("MAX_SRC_SEQ_LEN =", tokenizer.MAX_SRC_SEQ_LEN)
-    print("MAX_TRG_SEQ_LEN =",tokenizer.MAX_TRG_SEQ_LEN)
+    for batch_1_src, batch_1_target in dataloader:
+        print(batch_1_src.shape)
+        continue
+
+    # batch_1_src, batch_1_target = next(iter(dataloader))
+    # print(batch_1_src.shape)
+    # print(batch_1_target.shape)
+    # print("MAX_SRC_SEQ_LEN =", tokenizer.MAX_SRC_SEQ_LEN)
+    # print("MAX_TRG_SEQ_LEN =",tokenizer.MAX_TRG_SEQ_LEN)
 
 
 if __name__ == "__main__":
