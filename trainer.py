@@ -1,5 +1,4 @@
 import math
-from tokenizer import Tokenizer
 from transformer import Transformer
 import logging
 import torch
@@ -27,7 +26,8 @@ class Trainer:
       self.model.train()
       total_loss, n_word_total, n_word_correct = 0, 0, 0 
       for batch_idx, (src_batch, trg_batch) in enumerate(self.dataloader):
-          self.logger.info("\n\n batch_idx = {}".format(batch_idx))
+          src_batch = src_batch.to(self.device)
+          trg_batch = trg_batch.to(self.device)
           loss, n_correct, n_word = self.train_batch(src_batch, trg_batch, smoothing, trg_pad_idx)
           self.log_batch_result(batch_idx, loss, n_correct, n_word)
           n_word_total += n_word

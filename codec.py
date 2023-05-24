@@ -34,7 +34,7 @@ class Encoder(nn.Module):
     # X.shape = (batch_size, seq_len)
     #src_mask.shape = (batch_size, seq_len)
 
-    self.logger.info('Embedding, position encoding, dropout and normalizing')
+    self.logger.debug('Embedding, position encoding, dropout and normalizing')
     self.logger.debug('Encoding X.shape = {}'.format(X.shape))   
 
     X = self.src_embedding(X)
@@ -88,7 +88,7 @@ class Decoder(nn.Module):
         
     def forward(self,  decode_input, encode_output, self_attention_mask=None, decode_encode_attention_mask=None, return_attns=False):
         # decode_input.shape = (batch_size, seq_len, d_model)
-        self.logger.info('Decoding started')
+        self.logger.debug('Decoding started')
         self.logger.debug('decode_input.shape = {}'.format(decode_input.shape))
         self.logger.debug('encode_output.shape = {}'.format(encode_output.shape))
 

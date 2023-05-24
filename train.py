@@ -29,6 +29,7 @@ def main():
     dataloader = dataset.loader(batch_size=5)
 
     transformer = Transformer(textor)
+    transformer = transformer.to(device)
     optimizer = optimizer_for_model(transformer) 
     #train(transformer, dataloader, tokenizer, optimizer, device="cpu", epochs=10, log_interval=1)
     trainer = Trainer(textor, dataloader, transformer, optimizer, device="cpu")
