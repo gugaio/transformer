@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from codec import Encoder, Decoder
+from transformer.codec import Encoder, Decoder
 import logging
 
 def get_pad_mask(seq, pad_idx):

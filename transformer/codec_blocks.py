@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch
-from multi_head_attention import MultiHeadAttention
-from position_wise_feed_forward import PositionWiseFeedForward
+from transformer.multi_head_attention import MultiHeadAttention
+from transformer.position_wise_feed_forward import PositionWiseFeedForward
 import logging
 
 class EncoderBlock(nn.Module):

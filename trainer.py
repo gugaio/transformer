@@ -1,10 +1,12 @@
-import math
-from transformer import Transformer
 import logging
 import torch
-import torch.optim as optim
-from optimizer import ScheduledOptim
 import torch.nn.functional as F
+import torch.optim as optim
+
+from data.textor import Textor
+from data.translation_dataset import TranslationDataset
+from optimizer import ScheduledOptim
+from transformer.transformer import Transformer
 
 class Trainer:
     
@@ -96,3 +98,27 @@ class Trainer:
         else:
             loss = F.cross_entropy(pred, gold, ignore_index=trg_pad_idx, reduction='sum')
         return loss
+
+def optimizer_for_model(model):
+    lr_mul = 2
+    n_warmup_steps = 4000
+    return ScheduledOptim(
+        optim.Adam(model.parameters(), betas=(0.9, 0.98), eps=1e-09),
+        lr_mul, model.d_model, n_warmup_steps)
+   
+def main():
+    textor = Textor("data/output/train.txt")
+    textor.build()
+    dataset = TranslationDataset(textor)
+    dataloader = dataset.loader(batch_size=5)
+
+    transformer = Transformer(textor)
+    transformer = transformer.to("cpu")
+
+    optimizer = optimizer_for_model(transformer) 
+    trainer = Trainer(textor, dataloader, transformer, optimizer, device="cpu")
+    trainer.train(epochs=10)
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+    main()

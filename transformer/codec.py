@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from codec_blocks import EncoderBlock, DecoderBlock
-from position_encoding import PositionalEncoding
+from transformer.codec_blocks import EncoderBlock, DecoderBlock
+from transformer.position_encoding import PositionalEncoding
 import logging
 
 class Encoder(nn.Module):

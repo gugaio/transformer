@@ -1,8 +1,9 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 from typing import List
-from textor import Textor
 import re
+
+from data.textor import Textor
 
 class TranslationDataset(Dataset):
     

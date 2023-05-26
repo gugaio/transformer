@@ -1,4 +1,4 @@
-from attention import Attention
+from transformer.attention import Attention
 import torch
 import torch.nn as nn
 import logging
