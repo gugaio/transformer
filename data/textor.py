@@ -1,7 +1,7 @@
 from collections import Counter
 import re
 
-class Vocabulary:
+class Textor:
     
     def __init__(self, file_path):
         self.text = file_path
@@ -42,7 +42,7 @@ class Vocabulary:
         return {v: k for k, v in counter.items()}
 
 if __name__ == "__main__":
-    vocabulary = Vocabulary("data/train.txt")
+    vocabulary = Textor("data/train.txt")
     vocabulary.build()
     print(vocabulary.n_src_tokens)
     print(vocabulary.n_trg_tokens)

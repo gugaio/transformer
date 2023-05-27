@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-from data.vocabulary import Vocabulary
+from data.textor import Textor
 from data.translation_dataset import TranslationDataset
 from optimizer import ScheduledOptim
 from transformer.transformer import Transformer
@@ -107,16 +107,16 @@ def optimizer_for_model(model):
         lr_mul, model.d_model, n_warmup_steps)
    
 def main():
-    vocabulary = Vocabulary("data/output/train.txt")
-    vocabulary.build()
-    dataset = TranslationDataset(vocabulary)
+    textor = Textor("data/output/train.txt")
+    textor.build()
+    dataset = TranslationDataset(textor)
     dataloader = dataset.loader(batch_size=5)
 
-    transformer = Transformer(vocabulary)
+    transformer = Transformer(textor)
     transformer = transformer.to("cpu")
 
     optimizer = optimizer_for_model(transformer) 
-    trainer = Trainer(vocabulary, dataloader, transformer, optimizer, device="cpu")
+    trainer = Trainer(textor, dataloader, transformer, optimizer, device="cpu")
     trainer.train(epochs=10)
 
 if __name__ == "__main__":
