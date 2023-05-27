@@ -42,10 +42,10 @@ class Textor:
         return {v: k for k, v in counter.items()}
 
 if __name__ == "__main__":
-    vocabulary = Textor("data/train.txt")
-    vocabulary.build()
-    print(vocabulary.n_src_tokens)
-    print(vocabulary.n_trg_tokens)
-    print(vocabulary.SRC_VOCAB["<pad>"])
-    print(vocabulary.SRC_VOCAB["<unk>"])
+    textor = Textor("data/train.txt")
+    textor.build()
+    print(textor.n_src_tokens)
+    print(textor.n_trg_tokens)
+    print(textor.SRC_VOCAB["<pad>"])
+    print(textor.SRC_VOCAB["<unk>"])
  
