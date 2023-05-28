@@ -29,7 +29,8 @@ class Trainer:
           self.logger.info("\n\n\nEpoch {}".format(epoch))
 
           total_loss, loss_per_word, accuracy = self.train_epoch(smoothing=False, trg_pad_idx=self.tokenizer.TRG_VOCAB["<pad>"])
-          train_ppl = math.exp(min(total_loss, 100))
+          train_ppl = math.exp(min(loss_per_word, 100))
+          self.tb_writer.add_scalars('loss', {'train': loss_per_word}, epoch)
           self.tb_writer.add_scalars('ppl', {'train': train_ppl}, epoch)
           self.tb_writer.add_scalars('accuracy', {'train': accuracy*100}, epoch)          
           
