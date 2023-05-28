@@ -15,7 +15,7 @@ class Multi30kWriter:
     def write(self, file_path:str):
         with open(file_path, 'w') as f:
             for src_sample, trg_sample in self.dataset_train_interable:
-                if len(src_sample) > 50:
+                if len(src_sample) > 100:
                     continue
                 f.write(src_sample.rstrip("\n") + "\n")
                 f.write(trg_sample.rstrip("\n") + "\n")
@@ -26,4 +26,4 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     writer = Multi30kWriter()
     writer.build()
-    writer.write("data/train.txt")
+    writer.write("output/train.txt")
