@@ -8,6 +8,7 @@ class ScheduledOptim():
         self.d_model = d_model
         self.n_warmup_steps = n_warmup_steps
         self.n_steps = 0
+        self.last_lr = 0
 
 
     def step_and_update_lr(self):
@@ -32,6 +33,7 @@ class ScheduledOptim():
 
         self.n_steps += 1
         lr = self.lr_mul * self._get_lr_scale()
+        self.last_lr = lr
 
         for param_group in self._optimizer.param_groups:
             param_group['lr'] = lr
