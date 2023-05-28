@@ -33,7 +33,7 @@ class Trainer:
           train_ppl = math.exp(min(total_loss, 100))
           self.tb_writer.add_scalars('ppl', {'train': train_ppl}, epoch)
           self.tb_writer.add_scalars('accuracy', {'train': accuracy*100}, epoch)          
-          self.tb_writer.add_scalars('learning_rate', lr, epoch)
+          
         
     def train_epoch(self, smoothing, trg_pad_idx):
       self.model.train()
