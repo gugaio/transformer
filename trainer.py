@@ -27,7 +27,6 @@ class Trainer:
     def train(self, epochs):
       for epoch in range(epochs):
           self.logger.info("\n\n\nEpoch {}".format(epoch))
-          lr = self.optimizer._optimizer.param_groups[0]['lr']
 
           total_loss, loss_per_word, accuracy = self.train_epoch(smoothing=False, trg_pad_idx=self.tokenizer.TRG_VOCAB["<pad>"])
           train_ppl = math.exp(min(total_loss, 100))
