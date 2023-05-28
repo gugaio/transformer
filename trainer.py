@@ -1,4 +1,6 @@
 import logging
+import math
+import os
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
@@ -7,6 +9,8 @@ from data.textor import Textor
 from data.translation_dataset import TranslationDataset
 from optimizer import ScheduledOptim
 from transformer.transformer import Transformer
+
+from torch.utils.tensorboard import SummaryWriter
 
 class Trainer:
     
@@ -18,11 +22,18 @@ class Trainer:
         self.optimizer = optimizer
         self.device = device
         self.log_interval = 10
+        self.tb_writer = SummaryWriter(log_dir=os.path.join("data", 'tensorboard'))
 
     def train(self, epochs):
       for epoch in range(epochs):
           self.logger.info("\n\n\nEpoch {}".format(epoch))
-          train_loss, accuracy = self.train_epoch(smoothing=False, trg_pad_idx=self.tokenizer.TRG_VOCAB["<pad>"])
+          lr = self.optimizer._optimizer.param_groups[0]['lr']
+
+          total_loss, loss_per_word, accuracy = self.train_epoch(smoothing=False, trg_pad_idx=self.tokenizer.TRG_VOCAB["<pad>"])
+          train_ppl = math.exp(min(total_loss, 100))
+          self.tb_writer.add_scalars('ppl', {'train': train_ppl}, epoch)
+          self.tb_writer.add_scalars('accuracy', {'train': accuracy*100}, epoch)          
+          self.tb_writer.add_scalars('learning_rate', lr, epoch)
         
     def train_epoch(self, smoothing, trg_pad_idx):
       self.model.train()
@@ -38,12 +49,14 @@ class Trainer:
       loss_per_word = total_loss/n_word_total
       self.logger.info("\n\n Epoch loss per word = {}".format(loss_per_word))
       accuracy = n_word_correct/n_word_total
-      return loss_per_word, accuracy
+
+      return total_loss, loss_per_word, accuracy
     
     def train_batch(self, src_batch, trg_batch, smoothing, trg_pad_idx):
       src_batch, trg_batch = src_batch.to(self.device), trg_batch.to(self.device)
       self.optimizer.zero_grad()
       prediction = self.model(src_batch, trg_batch)
+      self.tb_writer.add_scalars('ppl', {'train': 1}, 1)
       n_correct, n_word = self.calculate_perfomance(prediction, trg_batch, trg_pad_idx) 
       loss = self.calculate_loss(prediction, trg_batch, trg_pad_idx, smoothing=smoothing)
       self.learn(loss,self.optimizer)
