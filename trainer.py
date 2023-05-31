@@ -127,7 +127,7 @@ def main():
     textor = Textor("data/output/train.txt")
     textor.build()
     dataset = TranslationDataset(textor)
-    dataloader = dataset.loader(batch_size=2048)
+    dataloader = dataset.loader(batch_size=10)
 
     transformer = Transformer(textor)
     transformer = transformer.to("cpu")
