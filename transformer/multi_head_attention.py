@@ -44,7 +44,7 @@ class MultiHeadAttention(nn.Module):
         self.logger.debug( f'After linear projection q.shape {v.shape}')
 
         self.logger.debug(f'After multi-heads weights q.shape {q.shape}, k.shape {k.shape} and v.shape {v.shape}')
-        # (batch_size, num_heads, len_q, depth)  <- (batch_size, len_q, depth)
+        # (seq idx, head idx, word idx, depth´ idx)  <- (seq idx, word idx, depth idx)
         q = self.split_into_heads(q)
         k = self.split_into_heads(k)
         v = self.split_into_heads(v)
@@ -54,11 +54,12 @@ class MultiHeadAttention(nn.Module):
 
         if mask is not None:
             self.logger.debug(f'Forward with mask.shape: {mask.shape}')
+            # As we add 1 dimension because head, we need to add 1 dimension to mask
             mask = mask.unsqueeze(1)
             self.logger.debug(f'Mask unsqueeze shape: {mask.shape}')
 
-        # scaled_attention.shape = (batch_size, num_heads, seq_len_q, depth)
-        # attention_weights.shape = (batch_size, num_heads, seq_len_q, seq_len_k)
+        # scaled_attention.shape = (seq idx, head idx, word idx, depth)
+        # attention_weights.shape = (seq idx, head idx, word q idx,, word k idx)
         scaled_attention, attention_weights = self.attention(q, k, v, mask)
         
         #(batch_size, seq_len_q, depth)  <- (batch_size, seq_len_q, num_heads, depth)

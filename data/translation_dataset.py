@@ -43,8 +43,22 @@ class TranslationDataset(Dataset):
       src_batch = torch.nn.utils.rnn.pad_sequence(src_batch, padding_value=self.textor.SRC_VOCAB["<pad>"]).T
       trg_batch = torch.nn.utils.rnn.pad_sequence(trg_batch, padding_value=self.textor.TRG_VOCAB["<pad>"]).T
 
-      self.textor.MAX_SRC_SEQ_LEN = self.MAX_SRC_SEQ_LEN
-      self.textor.MAX_TRG_SEQ_LEN = self.MAX_TRG_SEQ_LEN
+      rows, cols = src_batch.size()
+      bos_column = torch.full((rows, 1), self.textor.SRC_VOCAB["<bos>"])
+      src_batch = torch.cat((bos_column, src_batch), dim=1)
+      eos_column = torch.full((rows, 1), self.textor.SRC_VOCAB["<eos>"])
+      src_batch = torch.cat((src_batch, eos_column), dim=1)
+      
+
+
+      rows, cols = trg_batch.size()
+      bos_column = torch.full((rows, 1), self.textor.TRG_VOCAB["<bos>"])
+      trg_batch = torch.cat((bos_column, trg_batch), dim=1)
+      eos_column = torch.full((rows, 1), self.textor.TRG_VOCAB["<eos>"])
+      trg_batch = torch.cat((trg_batch, eos_column), dim=1)
+
+      self.textor.MAX_SRC_SEQ_LEN = self.MAX_SRC_SEQ_LEN + 2
+      self.textor.MAX_TRG_SEQ_LEN = self.MAX_TRG_SEQ_LEN + 2
 
       return src_batch, trg_batch
     

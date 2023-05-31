@@ -35,6 +35,10 @@ class Trainer:
           self.tb_writer.add_scalars('accuracy', {'train': accuracy*100}, epoch)          
           
         
+    def patch_trg(self, trg):
+      trg, gold = trg[:, :-1], trg[:, 1:].contiguous().view(-1)
+      return trg, gold
+    
     def train_epoch(self, smoothing, trg_pad_idx):
       self.model.train()
       total_loss, n_word_total, n_word_correct = 0, 0, 0 
@@ -53,12 +57,12 @@ class Trainer:
       return total_loss, loss_per_word, accuracy
     
     def train_batch(self, src_batch, trg_batch, smoothing, trg_pad_idx):
-      src_batch, trg_batch = src_batch.to(self.device), trg_batch.to(self.device)
+      trg_batch, gold = self.patch_trg(trg_batch)
       self.optimizer.zero_grad()
       prediction = self.model(src_batch, trg_batch)
       self.tb_writer.add_scalars('ppl', {'train': 1}, 1)
-      n_correct, n_word = self.calculate_perfomance(prediction, trg_batch, trg_pad_idx) 
-      loss = self.calculate_loss(prediction, trg_batch, trg_pad_idx, smoothing=smoothing)
+      n_correct, n_word = self.calculate_perfomance(prediction, gold, trg_pad_idx) 
+      loss = self.calculate_loss(prediction, gold, trg_pad_idx, smoothing=smoothing)
       self.learn(loss,self.optimizer)
       return loss, n_correct, n_word
     
