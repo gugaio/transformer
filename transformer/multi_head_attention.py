@@ -4,6 +4,7 @@ from attention import Attention
 import torch
 import torch.nn as nn
 import logging
+from model_info import ModelInfo
 
 class MultiHeadAttention(nn.Module):
     '''
@@ -117,20 +118,6 @@ if __name__ == "__main__":
 
     output, attn = multiHead(q, k, v, mask)
 
-    print("*************** Model size ***************")
-
-    param_size = 0
-    total_parametres = 0
-    for name, param in multiHead.named_parameters():
-        print(name, param.nelement() , param.element_size())
-        param_size += param.nelement() * param.element_size()
-        total_parametres += param.nelement()
-    buffer_size = 0
-    for buffer in multiHead.buffers():
-        buffer_size += buffer.nelement() * buffer.element_size()
-
-    size_all_mb = (param_size + buffer_size) / 1024**2
-    print('Total parameters:', total_parametres)
-    print('model size: {:.3f}MB'.format(size_all_mb))
+    ModelInfo.print(multiHead, multiHead.logger)
     
         
