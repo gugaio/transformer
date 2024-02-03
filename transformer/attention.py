@@ -58,5 +58,6 @@ if __name__ == "__main__":
     mask = torch.zeros(2, 1, 1, 4)
     # create attention object
     attention = Attention()
+
     # forward
     output, attn = attention(q, k, v, mask)

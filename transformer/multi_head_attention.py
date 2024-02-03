@@ -1,11 +1,22 @@
-from transformer.attention import Attention
+#!/usr/bin/env python
+
+from attention import Attention
 import torch
 import torch.nn as nn
 import logging
 
-__author__ = "Gustavo Barros"
-
 class MultiHeadAttention(nn.Module):
+    '''
+    Implementation of a Multi Head Dot Scaled Attention
+    :param d_model: (int) the number of expected features in the input
+    :param num_heads: (int) the number of heads in the multiheadattention models
+    :param d_k: (int) the number of features in the key
+    :param d_v: (int) the number of features in the value
+    :param dropout_rate: (float) the dropout value
+    :Output is a tuple of two tensors:
+        - output: (batch_size, seq_len_q, d_model)
+        - attn: (batch_size, n_heads, seq_len_q, seq_len_k)
+    '''
     def __init__(self, d_model, num_heads, d_k, d_v, dropout_rate=0.1):
         super(MultiHeadAttention, self).__init__()
         self.logger = logging.getLogger('MultiHeadAttention')
@@ -18,7 +29,7 @@ class MultiHeadAttention(nn.Module):
         self.wq = nn.Linear(d_model, num_heads * d_k, bias=False)
         self.wk = nn.Linear(d_model, num_heads * d_k, bias=False)
         self.wv = nn.Linear(d_model, num_heads * d_v, bias=False)
-        self.dense = nn.Linear(num_heads * d_v, d_model, bias=False)
+        self.attn_to_output_dense = nn.Linear(num_heads * d_v, d_model, bias=False)
 
         self.attention = Attention()
 
@@ -67,7 +78,7 @@ class MultiHeadAttention(nn.Module):
         self.logger.debug(f'Concat Attention shape: batch_size {concat_attention.shape[0]} seq_len_q:{concat_attention.shape[1]} depth: {concat_attention.shape[2]}')
 
         # output.shape = (batch_size, seq_len_q, d_model)
-        output = self.dropout(self.dense(concat_attention))
+        output = self.dropout(self.attn_to_output_dense(concat_attention))
         self.logger.debug(f'Feed forward result shape {output.shape}')
 
         output += residual
@@ -105,3 +116,21 @@ if __name__ == "__main__":
     mask = torch.ones(2, 1, 4)
 
     output, attn = multiHead(q, k, v, mask)
+
+    print("*************** Model size ***************")
+
+    param_size = 0
+    total_parametres = 0
+    for name, param in multiHead.named_parameters():
+        print(name, param.nelement() , param.element_size())
+        param_size += param.nelement() * param.element_size()
+        total_parametres += param.nelement()
+    buffer_size = 0
+    for buffer in multiHead.buffers():
+        buffer_size += buffer.nelement() * buffer.element_size()
+
+    size_all_mb = (param_size + buffer_size) / 1024**2
+    print('Total parameters:', total_parametres)
+    print('model size: {:.3f}MB'.format(size_all_mb))
+    
+        
