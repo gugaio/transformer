@@ -165,3 +165,5 @@ cython_debug/
 #  Example: /logs/events.out.tfevents.*
 data/tensorboard/*
 events.out.tfevents.*
+
+/.vscode
