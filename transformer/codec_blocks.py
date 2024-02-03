@@ -23,7 +23,7 @@ class EncoderBlock(nn.Module):
             assert x.size(0) == mask.size(0)
             self.logger.debug('mask.shape {}'.format(mask.shape))
 
-        x, attention_weights = self.self_attention(q=x, k=x, v=x, mask=mask)
+        x, attention_weights = self.self_attention(x, mask=mask)
         
         self.logger.debug('Running Position Wise Feed Forward')
         x = self.feed_forward(x)

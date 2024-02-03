@@ -38,21 +38,17 @@ class MultiHeadAttention(nn.Module):
         self.layer_norm = nn.LayerNorm(d_model, eps=1e-6)
 
 
-    def forward(self, q, k, v, mask=None):
-        assert q.size(-1) == k.size(-1)
-        self.logger.debug(f'Forward q.shape {q.shape}, k.shape {k.shape} and v.shape {v.shape}')
-        self.logger.debug(f'Batch size: {q.shape[0]} Sentence lenght:{q.shape[1]} d_model: {q.shape[2]}')
-
-        batch_size, len_q = q.size(0), q.size(1)
-        residual = q
+    def forward(self, X, mask=None):
+        batch_size, len_q, _ = X.size()
+        residual = X
 
         self.logger.debug("Creating multi-heads weights")
 
-        q = self.wq(q)
+        q = self.wq(X)
         self.logger.debug( f'After linear projection q.shape {q.shape}')
-        k = self.wk(k)
+        k = self.wk(X)
         self.logger.debug( f'After linear projection q.shape {k.shape}')
-        v = self.wv(v)
+        v = self.wv(X)
         self.logger.debug( f'After linear projection q.shape {v.shape}')
 
         self.logger.debug(f'After multi-heads weights q.shape {q.shape}, k.shape {k.shape} and v.shape {v.shape}')
@@ -110,13 +106,10 @@ if __name__ == "__main__":
 
     multiHead = MultiHeadAttention(d_model, num_heads, d_k, d_v)
 
-    q = torch.rand(2, 4, 512)
-    k = torch.rand(2, 4, 512)
-    v = torch.rand(2, 4, 512)
-   
+    X = torch.rand(2, 4, 512)   
     mask = torch.ones(2, 1, 4)
 
-    output, attn = multiHead(q, k, v, mask)
+    output, attn = multiHead(X, mask)
 
     ModelInfo.print(multiHead, multiHead.logger)
     
