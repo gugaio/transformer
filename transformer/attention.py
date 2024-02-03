@@ -1,22 +1,28 @@
+#!/usr/bin/env python
+
 import torch
 import torch.nn as nn
 import logging
 
-__author__ = "Gustavo Barros"
 
 class Attention(nn.Module):
+    '''
+    Implementation of the scaled dot-product attention
+    :param q: (batch_size, n_heads, seq_len, d_k)
+    :param k: (batch_size, n_heads, seq_len, d_k)
+    :param v: (batch_size, n_heads, seq_len, d_v)
+    :param mask: (batch_size, 1, 1, seq_len)
+    :Output is a tuple of two tensors: 
+        - output: (batch_size, n_heads, seq_len, d_v)
+        - attn: (batch_size, n_heads, seq_len, seq_len)
+    '''
 
     def __init__(self):
         super().__init__()
         self.logger = logging.getLogger('Attention')
 
     def forward(self, q, k, v, mask=None):
-        '''
-        :param q e k: (batch_size, n_heads, seq_len, d_k)
-        :param v: (batch_size, n_heads, seq_len, d_v)
-        :param mask: (batch_size, 1, 1, seq_len)
-        :return: (batch_size, n_heads, seq_len, d_v), (batch_size, n_heads, seq_len, seq_len)
-        '''
+        
         assert q.size(-1) == k.size(-1)
         self.logger.debug(f'Forward q.shape, k.shape and v.shape: {q.shape} {k.shape} {v.shape}')
         
