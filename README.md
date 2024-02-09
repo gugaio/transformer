@@ -56,3 +56,13 @@ sorted_chars = sorted(list(letters))
 vocab_size = len(sorted_chars)
 ```
 
+Agora você só precisa construir os 2 dicionários, que chamarei de Char_to_ID e ID_to_Char. 
+```
+char_to_ID = {c:i for i,c in enumerate(chars)}
+# Char_to_ID['a'] será igual a 1
+
+itoc = {i:c for i,c in enumerate(chars)}
+# ID_to_char[1] será igual a 'a'
+
+```
+Agora por fim só criar nosso Tokenizer que implementará os métodos encode ( transformando texto num lista de IDs) e decode ( transformando uma lista de IDs em texto ). E claro vamos utilizar os 2 dicionários para isso.
