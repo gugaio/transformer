@@ -18,3 +18,25 @@ A implementação será feita em 5 fases, pra ajudar a entender a evolução de 
 
 # Passo 1 - Gerador simples
 
+No primeiro passo, vamos implementar o nosso gerador v0, sem nada de transformer ainda. 
+
+Basicamente ele vai receber um texto e escrever a próxima palavra, como qualquer GPT.
+A primeira tarefa será carregar um grande texto para o treinamento do GPT.
+
+![texto](https://github.com/gugaio/transformer/assets/17186525/a2477def-a20f-4323-80d9-5ca18c2f7ffe)
+
+## Texto para treinamento
+
+Isso é bem simples, basta um grande texto. Aqui disponibilizei um texto de exemplo no github e vou baixar com wget e carregar normalmente em python
+```
+!wget https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt
+input = "input.txt"
+with open(input, 'r', encoding='utf8') as f:
+  file_content = f.read()
+```
+Entretanto você deve saber que toda I.A funciona com números, os chamados tokens, e não texto. Por isso nosso próximo passo é implementar um Tokenizer que basicamente converte qualquer texto numa lista de tokens id, onde cada ID representa uma palavra.
+
+![tokenizer](https://github.com/gugaio/transformer/assets/17186525/b1497ae5-55ce-4a9b-a9e4-378f50d712eb)
+
+## Implementando nosso Tokenizer
+
