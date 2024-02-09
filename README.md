@@ -39,4 +39,20 @@ Entretanto você deve saber que toda I.A funciona com números, os chamados toke
 ![tokenizer](https://github.com/gugaio/transformer/assets/17186525/b1497ae5-55ce-4a9b-a9e4-378f50d712eb)
 
 ## Implementando nosso Tokenizer
+Um Tokenizer pode converter uma palavra em um determinado token ( por exemplo ABA em 1), ou pode converter cada letra em um token ( ABA em 121 ). Normalmente nós utilizamos um token por palabra pois isso ajuda por exemplo a I.A entender o relacionamento entre as palavras, como palavras comuns num determinado contexto. Aqui vou utilizar um tokenizer mais simples convertento cada letra em um token, é mais simples para entender como funciona um GPT.
+
+Então basicamente meu tokenizer precisa transformar uma string como 'aba' num array de inteiros ['1', '2', '1'].
+Ou seja, cada letra é um número, cada número é uma letra. Uma maneira fácil de fazer isso é construir um dicionário onde cada chave é uma letra, e cada valor um número. E aproveitamos e construimos um dictionario que é o inverso disso, a chave é um ID, o valor é sua letra.
+
+Para isso precisamos saber primeiro quantas letras meu dicionário vai ter, o nosso Vocabulary Size.
+```
+# set retorna uma sequencia de letras únicas presentes no texto de treinamento. Assim temos todas as letras necessárias.
+letters = set(file_content)
+
+# para construir um dicionário ordenado, transformamos em list e realizamos um sort
+sorted_chars = sorted(list(letters))
+
+# aproveitamos para guardar o total de letras presenter no nosso dicionário
+vocab_size = len(sorted_chars)
+```
 
