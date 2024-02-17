@@ -61,7 +61,7 @@ Agora você só precisa construir os 2 dicionários, que chamarei de Char_to_ID 
 char_to_ID = {c:i for i,c in enumerate(chars)}
 # Char_to_ID['a'] será igual a 1
 
-itoc = {i:c for i,c in enumerate(chars)}
+ID_to_char = {i:c for i,c in enumerate(chars)}
 # ID_to_char[1] será igual a 'a'
 
 ```
